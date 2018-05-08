@@ -7,30 +7,29 @@ class App extends Component {
   constructor(){
     super();
     this.state = {
-      name: "eiei"
+      name: "ตารางผ่อนชำระเงินกู้"
     }
   }
-  componentWillMount(){
-    this.setState({name: "eieieiก่อน"})
-  }
-  componentDidMount(){
-    this.setState({name: "eieieiหลัง"})
-  }
+  // componentWillMount(){
+  //   this.setState({name: "eieieiก่อน"})
+  // }
+  // componentDidMount(){
+  //   this.setState({name: "eieieiหลัง"})
+  // }
   render() {
     return (
       <div className="App">
-        <header className="App-header">
+        {/* <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
+          <h1 className="App-title">ตารางผ่อนชำระเงินกู้</h1>
+        </header> */}
 
         <h1>{this.state.name}</h1>
-        <h1>{this.props.name}</h1>
-        <p className="App-intro">
+        {/* <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        </p> */}
         <Calculater />
-        <Calculater plus={true} ></Calculater>
+        {/* <Calculater plus={true} ></Calculater> */}
       </div>
     );
   }

@@ -1,66 +1,99 @@
 import React, { Component } from 'react';
-
-class Calculater extends Component{
-    constructor(){
+import ReactDataGrid from 'react-data-grid';
+import Moment from 'react-moment';
+import 'moment-timezone';
+class Calculater extends Component {
+    constructor() {
         super()
+        var today = new Date(),
+            date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        this._columns = [
+            { key: 'id', name: 'งวดที่' },
+            { key: 'ans', name: 'เงินกู้/เงินกู้คงเหลือ' },
+            { key: 'ratesum', name: 'ดอกเบี้ย' },
+            { key: 'yod', name: 'เงินต้น' },
+            { key: 'count', name: 'รวมหัก' }];
+        this._rows = []
+        this._sumRate = 0
+        this._count = 0
         this.state = {
+            old: 0,
+            rat: 0,
+            yod: 0,
+            count: 0,
             number1: 0,
             number2: 0,
             operater: null,
             result: 0
         }
     }
-    plus(){
-        this.setState({operater: 'plus'})
-        this.setState({result: this.state.number1 + this.state.number2})
-    }
-    minus(){
-        this.setState({operater: 'minus'})
-    }
-    mul(){
-        this.setState({operater: 'mul'})
-    }
-    share(){
-        this.setState({operater: 'share'})
-    }
-    result(){
-        if(this.state.operater == 'plus'){
-            this.setState({result: this.state.number1 + this.state.number2})
+
+    createRows = () => {
+        let rows = [];
+        let round = (60 - +this.state.old) * 12
+        let yod = (Math.ceil(Math.ceil(+this.state.yod / round) / 10)) * 10
+        let last = yod - ((yod * round) - +this.state.yod)
+        let ans = +this.state.count
+        let count = 0
+        let ratesum = 0
+        for (let i = 0; i < round; i++) {
+            ratesum = (+ans * (+this.state.rat / 100) / 365) * 30
+            count = yod + ratesum
+            if(i === round -1) yod = last
+            rows.push({
+                id: i + 1,
+                ratesum: ratesum,
+                count: count,
+                ans: ans,
+                yod: yod
+            });
+            ans = ans - yod
+            this._sumRate +=ratesum
+            this._count +=count
+            console.log({ i: i, เงินกู้คงเหลือ: ans, ดอกเบี้ย: ratesum, เงินต้น: yod, รวมหัก: count ,_sumRate:this._sumRate,_count:this._count});
         }
-        if(this.state.operater == 'minus'){
-            this.setState({result: this.state.number1 - this.state.number2})
-        }
-        if(this.state.operater == 'mul'){
-            this.setState({result: this.state.number1 * this.state.number2})
-        }
-        if(this.state.operater == 'share'){
-            this.setState({result: this.state.number1 / this.state.number2})
-        }
+        console.log(rows);
+
+        this._rows = rows;
+    };
+
+    rowGetter = (i) => {
+        return this._rows[i];
+    };
+
+    result() {
+        this.createRows();
+        this.setState({ operater: true })
+    }
+    handleNumber1(event) {
+        this.setState({ yod: (event.target.value) })
+        this.setState({ count: (event.target.value) })
+    }
+    handleNumber2(event) {
+        this.setState({ rat: (event.target.value) })
+    }
+    handleNumber3(event) {
+        this.setState({ old: (event.target.value) })
     }
 
-    handleNumber1(event){
-        this.setState({number1: parseInt(event.target.value)})
-    }
-    handleNumber2(event){
-        this.setState({number2: parseInt(event.target.value)})
-    }
-
-    render(){
-        return(
+    render() {
+        return (
             <div>
-                <h1> this calculater</h1>
-                <input onChange={this.handleNumber1.bind(this)}/><br />
-                <input onChange={this.handleNumber2.bind(this)}/><br />
-                {this.props.plus ? <button onClick={this.plus.bind(this)}>+</button> : null}
-                <button onClick={this.minus.bind(this)}>-</button>
-                <button onClick={this.mul.bind(this)}>*</button>
-                <button onClick={this.share.bind(this)}>/</button>
-                
-                <button onClick={this.result.bind(this)}> = </button>
+                <h3>ยอดตั้งต้น: <input type="number" step="0.01" onChange={this.handleNumber1.bind(this)} /> </h3>
+                <h3>อัตราดอกเบี้ย/ปี(%): <input type="number" step="0.01" onChange={this.handleNumber2.bind(this)} /></h3>
+                <h3>อายุผู้กู้: <input type="number" max="60" onChange={this.handleNumber3.bind(this)} /></h3>
+
+                <button onClick={this.result.bind(this)}> คำนวณเงินกู้ </button>
                 <br />
-                <h1>Number1: {this.state.number1}</h1>
-                <h1>Number2: {this.state.number2}</h1>
-                <h1>result: {this.state.result}</h1>
+                <div >
+                    <ReactDataGrid
+                        columns={this._columns}
+                        rowGetter={this.rowGetter}
+                        rowsCount={this._rows.length}
+                    />
+                </div>
+                
+                <h3>รวมดอก: </h3>
             </div>
         )
     }
